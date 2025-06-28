@@ -2,7 +2,7 @@
 //  DateUtility.swift
 //  IOSEventTrigger
 //
-//  Created by 3Frames-Vijayendra Kumar Madda on 28/06/25.
+//  Created by Vijayendra Kumar Madda on 28/06/25.
 //
 
 import UIKit

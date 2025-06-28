@@ -11,7 +11,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
-
     func scene(_ scene: UIScene,
                willConnectTo session: UISceneSession,
                options connectionOptions: UIScene.ConnectionOptions) {
@@ -19,8 +18,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let initialViewController = storyboard.instantiateViewController(identifier: "ViewController")
-
-        let window = UIWindow(windowScene: windowScene)
+        let window = TouchTrackerWindow(windowScene: windowScene)
         window.rootViewController = initialViewController
         self.window = window
         window.makeKeyAndVisible()

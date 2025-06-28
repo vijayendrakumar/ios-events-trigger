@@ -6,29 +6,76 @@
 //
 
 import XCTest
+import Foundation
 
-final class IOSEventTriggerUITests: XCTestCase {
+class IOSEventTriggerUITests: XCTestCase {
+    let app = XCUIApplication()
     
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-        
-        // In UI tests it is usually best to stop immediately when a failure occurs.
+    override func setUp() {
+        super.setUp()
         continueAfterFailure = false
-        
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-    
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-    
-    @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
         app.launch()
-        
-        app.buttons["identifier_action_button"].tap() /// Simulates a tap event
     }
+    
+    func testEventRecording() {
+        let recorder = EventRecorder(app: app, eventTypes: ["tap", "swipe", "keyboard", "system"])
+        recorder.startRecording()
+        
+        
+        // Simulate user interactions
+        let button = app.buttons["identifier_action_button"]
+        button.tap()
+        if button.exists {
+            recorder.recordEvent(type: "tap", details: [
+                "element": button.identifier.isEmpty ? "button" : button.identifier
+            ])
+        }
+        
+        let element = app.scrollViews.firstMatch
+        if element.exists {
+            element.swipeLeft()
+            recorder.recordEvent(type: "swipe", details: [
+                "element": element.identifier.isEmpty ? "unnamed scrollView" : element.identifier,
+                "direction": "left"
+            ])
+        }
+        
+        // Simulate keyboard input
+        let textField = app.textFields["identifier_input_textField"]
+        if textField.exists {
+            textField.tap()
+            textField.typeText("test input")
+            recorder.recordEvent(type: "keyboard", details: [
+                "input": "test input",
+                "element": textField.identifier.isEmpty ? "textField" : textField.identifier
+            ])
+        }
+        
+        // Wait for events to be captured
+        sleep(2)
+        
+        // Save recorded events
+        recorder.stopRecording(toFile: "test_events")
+    }
+    
 }
 
+extension XCUIElement {
+    typealias TapHandler = (CGPoint) -> Void
+    typealias SwipeHandler = (EventRecorder.SwipeDirection, CGPoint) -> Void
+    
+    var tapOverride: TapHandler? {
+        get { objc_getAssociatedObject(self, &AssociatedKeys.tapHandler) as? TapHandler }
+        set { objc_setAssociatedObject(self, &AssociatedKeys.tapHandler, newValue, .OBJC_ASSOCIATION_RETAIN) }
+    }
+    
+    var swipeOverride: SwipeHandler? {
+        get { objc_getAssociatedObject(self, &AssociatedKeys.swipeHandler) as? SwipeHandler }
+        set { objc_setAssociatedObject(self, &AssociatedKeys.swipeHandler, newValue, .OBJC_ASSOCIATION_RETAIN) }
+    }
+    
+    private struct AssociatedKeys {
+        static var tapHandler: UInt8 = 0
+        static var swipeHandler: UInt8 = 1
+    }
+}
