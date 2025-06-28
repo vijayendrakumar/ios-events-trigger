@@ -12,13 +12,13 @@ struct TextLog: TextOutputStream {
     /// Appends the given string to the stream.
     mutating func write(_ string: String) {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .allDomainsMask)
-        let documentDirectoryPath = paths.first!
+        let documentDirectoryPath = paths[0]
         let log = documentDirectoryPath.appendingPathComponent("log.txt")
         
         do {
             let handle = try FileHandle(forWritingTo: log)
             handle.seekToEndOfFile()
-            handle.write(string.data(using: .utf8)!)
+            handle.write(string.data(using: .utf8) ?? Data())
             handle.closeFile()
         } catch {
             print(error.localizedDescription)

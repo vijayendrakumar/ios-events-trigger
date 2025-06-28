@@ -15,6 +15,10 @@ class ViewController: UIViewController {
     var listener: NWListener?
     var textLog = TextLog()
     
+    var dateFormatter: String {
+        DateUtility.getFormattedDate()
+    }
+    
     @IBOutlet weak var actionButton: UIButton!
     @IBOutlet weak var inputTextField: UITextField!
     @IBOutlet weak var screenShotButton: UIButton!
@@ -25,6 +29,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .white
         addGestureRecognizers()
         addButton()
         inputTextField.delegate = self
@@ -67,22 +72,22 @@ class ViewController: UIViewController {
     
     @objc func didRecongnizeTapGesture(_ sender: UITapGestureRecognizer) {
         let location = sender.location(in: view)
-        textLog.write("Tap gresture with Date: ******* \(Date()) ******** at location: \(location)")
+        textLog.write("Tap gresture with Date: ******* \(Date()) ******** at location: \(location)  \n")
     }
     
     @objc func didRecongnizePinchGesture(_ sender: UIPinchGestureRecognizer) {
         let location = sender.location(in: view)
-        textLog.write("Pinch gresture with Date: ******* \(Date()) ******** at location: \(location)")
+        textLog.write("Pinch gresture with Date: ******* \(Date()) ******** at location: \(location)  \n")
     }
     
     @objc func didRecongnizeLongPressGesture(_ sender: UILongPressGestureRecognizer) {
         let location = sender.location(in: view)
-        textLog.write("LongPress gresture with Date: ******* \(Date()) ******** at location: \(location)")
+        textLog.write("LongPress gresture with Date: ******* \(Date()) ******** at location: \(location)  \n")
     }
     
     @objc func didRecongnizePanGesture(_ sender: UIPanGestureRecognizer) {
         let location = sender.location(in: view)
-        textLog.write("Pan gresture with Date: ******* \(Date()) ******** at location: \(location)")
+        textLog.write("Pan gresture with Date: ******* \(Date()) ******** at location: \(location)  \n")
     }
     
     // MARK: Add Button
@@ -100,8 +105,8 @@ class ViewController: UIViewController {
         saveScreenshot()
         sendEvent([
             "type": "Screenshot",
-            "timestamp": getFormattedDate(),
-            "payload": "Screenshot tapped"
+            "timestamp": dateFormatter,
+            "payload": "\n Screenshot tapped \n"
         ])
     }
     
@@ -118,8 +123,8 @@ class ViewController: UIViewController {
     @objc func buttonTapped(_ sender: UIButton) {
         sendEvent([
             "type": "Button",
-            "timestamp": getFormattedDate(),
-            "payload": "Action Button tapped"
+            "timestamp": dateFormatter,
+            "payload": "\n Action Button tapped \n"
         ])
         
         let logEntries = [
@@ -138,7 +143,7 @@ class ViewController: UIViewController {
             
             if let jsonString = String(data: jsonData, encoding: .utf8) {
                 print("Json String \(jsonString)")
-                textLog.write("\(jsonString)")
+                textLog.write("\(jsonString)  \n")
                 readLogfile()
             }
         } catch {
@@ -169,7 +174,7 @@ class ViewController: UIViewController {
         let fm = FileManager.default
         let url = fm.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("screenshot-\(Date()).png")
         do {
-            try data.write(to: url)
+            try data.write(to: url, options: .completeFileProtection)
             print("Screenshot saved at: \(url)")
         } catch {
             print("Failed to save screenshot: \(error)")
@@ -191,7 +196,7 @@ class ViewController: UIViewController {
     
     func start(port: UInt16) {
         do {
-            listener = try NWListener(using: .tcp, on: NWEndpoint.Port(rawValue: port)!)
+            listener = try NWListener(using: .tcp, on: NWEndpoint.Port(rawValue: port) ?? 0)
         } catch {
             print("Failed to start listener: \(error)")
             return
@@ -221,25 +226,17 @@ class ViewController: UIViewController {
         }
     }
     
-    func getFormattedDate() -> String {
-        let timeStamp = Int(Date().timeIntervalSince1970 * 1000)
-        let date = Date(timeIntervalSince1970: TimeInterval(timeStamp) / 1000)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss:ms"
-        formatter.timeZone = TimeZone.current
-        return formatter.string(from: date)
-    }
 }
 // MARK: TextField delegates
 extension ViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         let text = textField.text ?? ""
         print("Textfield data entered char \(text)")
-        textLog.write("Text field input date with Date: ******* \(Date()) ******** Text: \(text)")
+        textLog.write("Text field input with Date: ******* \(Date()) ******** Text: \(text) \n")
         sendEvent([
             "type": "TextField",
-            "timestamp": getFormattedDate(),
-            "payload": "User input @@@ \(text)"
+            "timestamp": dateFormatter,
+            "payload": "\n User input @@@ \(text) \n"
         ])
         textField.resignFirstResponder()
         return true
