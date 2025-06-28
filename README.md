@@ -12,6 +12,7 @@ ios-event-trigger app will trigger events to MacOS. MacOS will listen to events.
 5. Input text enter data and click on return on keyboard, it will log into file also event trigger to Mac.
 6. Tap on Take screenshot, it will take the app screenshot and save in document.
 7. Tap, pan, pinch, long press on screen, it will log into file.
+8. Implemented XCUITest
    
 ![IMG_8112](https://github.com/user-attachments/assets/9c2dcd54-69e5-4676-b227-c4e86502e7ba)
 
